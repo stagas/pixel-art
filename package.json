@@ -1,0 +1,25 @@
+{
+  "name": "pixel-art",
+  "version": "1.0.0",
+  "description": "generate pixel art programatically",
+  "main": "index.js",
+  "files": [
+    "index.js"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/stagas/pixel-art.git"
+  },
+  "keywords": [
+    "canvas",
+    "draw",
+    "pixel",
+    "art"
+  ],
+  "author": "stagas",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/stagas/pixel-art/issues"
+  },
+  "homepage": "https://github.com/stagas/pixel-art#readme"
+}
