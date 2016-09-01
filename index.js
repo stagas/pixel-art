@@ -14,7 +14,7 @@ function PixelArt(rows) {
 
 PixelArt.art = PixelArt.prototype.art = function(rows) {
   if (!(this instanceof PixelArt)) return new PixelArt(rows);
-  this._rows = rows;
+  this._rows = 'string' === typeof rows ? rows.split('\n') : rows;
   return this;
 };
 
