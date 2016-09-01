@@ -1,6 +1,6 @@
 {
   "name": "pixel-art",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "generate pixel art programatically",
   "main": "index.js",
   "files": [
