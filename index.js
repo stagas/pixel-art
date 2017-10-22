@@ -51,7 +51,7 @@ PixelArt.prototype.draw = function(ctx) {
     for (var col, x = 0; x < cols.length; x++) {
       col = cols[x];
       ctx.fillStyle = this._palette[col] || 'transparent';
-      ctx.fillRect(x*s+p.x, y*s+p.y, s, s);
+      ctx.fillRect(x * s + p.x * s, y * s + p.y * s, s, s);
     }
   }
   return this;
