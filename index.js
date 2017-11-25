@@ -1,7 +1,8 @@
+var LZString = require('lz-string')
 
 module.exports = PixelArt;
 
-function PixelArt(rows) {
+function PixelArt(rows, palette) {
   if (!(this instanceof PixelArt)) return new PixelArt(rows);
 
   this._palette = {};
@@ -56,3 +57,40 @@ PixelArt.prototype.draw = function(ctx) {
   }
   return this;
 };
+
+PixelArt.save = PixelArt.prototype.save = function() {
+  return LZString.compressToUint8Array(this._rows.join('\n') + '\t' + JSON.stringify(this._palette));
+}
+
+PixelArt.load = PixelArt.prototype.load = function(code) {
+  if (typeof code === 'string') {
+    code = code.split(',');
+    var size = code.length;
+    var array = new Uint8Array(size);
+    for (var i = 0; i < size; i++) {
+      array[i] = parseInt(code[i]);
+    }
+    code = array;
+  }
+  code = LZString.decompressFromUint8Array(code);
+  if (!code) throw 'Invalid code';
+  code = code.split('\t');
+  var palette = null;
+  try {
+    palette = JSON.parse(code[1]);
+  } catch (e) {
+    throw 'Invalid palette code';
+  }
+  this._rows = code[0].split('\n');
+  this._palette = palette;
+  return this;
+}
+
+PixelArt.export = PixelArt.prototype.export = function(filetype, ratio) {
+  if (!filetype) filetype = 'image/webp'
+  if (!ratio) ratio = 1
+  var canvas = document.createElement('canvas');
+  var ctx = canvas.getContext('2d');
+  this.draw(ctx);
+  return canvas.toDataURL(filetype, ratio);
+}

@@ -14,7 +14,7 @@ npm install pixel-art
 ```js
 var pixel = require('pixel-art');
 
-pixel.art([
+var nyan = pixel.art([
     '                  BBBBBBBBBBBBBBBBB',
     '                 B-----------------B',
     '                B--**************---B',
@@ -56,6 +56,45 @@ pixel.art([
 ```
 
 Result:
+
+![example.png](example.png)
+
+## Export
+
+To export to a base64 code, use:
+
+```js
+var filetype = 'image/png' // default: 'image/webp'
+var ratio = 0.5 // default: 1
+
+nyan.export(filetype, ratio)
+// <- String
+```
+
+
+## Save
+
+To save the compressed art string, use:
+
+```js
+nyan.save()
+// <- Compressed string with art and palette
+```
+
+> It uses [LZ-String](https://github.com/pieroxy/lz-string/). In the example, it compressed 25% more compared to the image/webp string compression
+
+## Load
+
+To load the compressed art string, use:
+
+```js
+var PixelArt = require('pixel-art');
+new PixelArt().load(nyan.save()).pos({ x: 20, y: 20 })
+.scale(6)
+.draw(canvas.getContext('2d'));
+```
+
+Will output the same result:
 
 ![example.png](example.png)
 
