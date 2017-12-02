@@ -1,5 +1,3 @@
-var LZString = require('lz-string')
-
 module.exports = PixelArt;
 
 function PixelArt(rows, palette) {
@@ -58,39 +56,75 @@ PixelArt.prototype.draw = function(ctx) {
   return this;
 };
 
-PixelArt.save = PixelArt.prototype.save = function() {
-  return LZString.compressToUint8Array(this._rows.join('\n') + '\t' + JSON.stringify(this._palette));
+PixelArt.save = PixelArt.prototype.toString = function () {
+  var rows = this._rows.map(function (row) {
+    var characters = [' ']
+    row.split('').forEach(function (character) {
+      if (characters.indexOf(character) === -1) characters.push(character)
+      return character
+    })
+    var regex = null
+    var matches = null
+    characters.forEach(function (character) {
+      regex = new RegExp('([' + character.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, '\\$&') + '])+','g')
+      matches = row.match(regex)
+      if (matches) {
+        matches.forEach(function (match) {
+          if(match.length > 1) row = row.replace(match, [character, match.length].join(''))
+        })
+      }
+    })
+    return row
+  }).join('{}')
+  var palette = Object.keys(this._palette).map(function (key) {
+    return key + '(' + this._palette[key] + ')'
+  }.bind(this)).join('')
+
+  return [rows, palette].join('[]')
 }
 
-PixelArt.load = PixelArt.prototype.load = function(code) {
-  if (typeof code === 'string') {
-    code = code.split(',');
-    var size = code.length;
-    var array = new Uint8Array(size);
-    for (var i = 0; i < size; i++) {
-      array[i] = parseInt(code[i]);
+PixelArt.load = PixelArt.prototype.fromString = function(string) {
+  var rows = []
+  var palette = {}
+  var matches = null
+
+  string = string.split('[]')
+  rows = string[0].split('{}')
+  palette = string[1]
+
+  rows = rows.map(function (row) {
+    matches = row.match(/[\s\S](\d+)/g)
+    if (matches) {
+      matches.forEach(function (match) {
+        match = match.match(/([\s\S])(\d+)/)
+        row = row.replace(match[0], match[1].repeat(match[2]))
+      })
     }
-    code = array;
-  }
-  code = LZString.decompressFromUint8Array(code);
-  if (!code) throw 'Invalid code';
-  code = code.split('\t');
-  var palette = null;
-  try {
-    palette = JSON.parse(code[1]);
-  } catch (e) {
-    throw 'Invalid palette code';
-  }
-  this._rows = code[0].split('\n');
+    return row
+  })
+
+  palette = (palette.match(/.\(([^\)]+)\)/g) || []).reduce(function (palette, keyValue) {
+    keyValue = keyValue.split('(')
+    if (keyValue.length > 1) {
+      palette[keyValue[0]] = keyValue[1].substr(0, keyValue[1].length - 1)
+    }
+    return palette
+  }, {})
+
+  this._rows = rows;
   this._palette = palette;
   return this;
+}
+
+PixelArt.toCanvas = PixelArt.prototype.toCanvas = function(filetype, ratio) {
+  var canvas = document.createElement('canvas');
+  var ctx = canvas.getContext('2d');
+  this.draw(ctx);
+  return canvas
 }
 
 PixelArt.export = PixelArt.prototype.export = function(filetype, ratio) {
   if (!filetype) filetype = 'image/webp'
   if (!ratio) ratio = 1
-  var canvas = document.createElement('canvas');
-  var ctx = canvas.getContext('2d');
-  this.draw(ctx);
-  return canvas.toDataURL(filetype, ratio);
+  return this.toCanvas().toDataURL(filetype, ratio);
 }
