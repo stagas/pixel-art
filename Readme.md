@@ -59,6 +59,30 @@ Result:
 
 ![example.png](example.png)
 
+## Export
+
+To export to a base64 code, use:
+
+```js
+var filetype = 'image/png' // default: 'image/webp'
+var ratio = 0.5 // default: 1
+
+nyan.export(filetype, ratio)
+// <- String
+```
+
+## Serialize with simple compression object
+
+To load the compressed art string, use `toString` to save and `fromString` to load the art and palette:
+
+```js
+var PixelArt = require('pixel-art');
+new PixelArt().fromString(nyan.toString()).pos({ x: 0, y: 0 })
+.scale(6)
+.draw(canvas.getContext('2d'));
+```
+
+
 ## License
 
 MIT © [stagas](https://github.com/stagas)

@@ -56,3 +56,76 @@ PixelArt.prototype.draw = function(ctx) {
   }
   return this;
 };
+
+PixelArt.toString = PixelArt.prototype.toString = function () {
+  var rows = this._rows.map(function (row) {
+    var characters = [' '];
+    row.split('').forEach(function (character) {
+      if (characters.indexOf(character) === -1) characters.push(character);
+      return character;
+    })
+    var regex = null;
+    var matches = null;
+    characters.forEach(function (character) {
+      regex = new RegExp('([' + character.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, '\\$&') + '])+','g');
+      matches = row.match(regex);
+      if (matches) {
+        matches.forEach(function (match) {
+          if(match.length > 1) row = row.replace(match, [character, match.length].join(''));
+        });
+      }
+    });
+    return row;
+  }).join('{}');
+  var palette = Object.keys(this._palette).map(function (key) {
+    return key + '(' + this._palette[key] + ')';
+  }.bind(this)).join('');
+
+  return [rows, palette].join('[]');
+}
+
+PixelArt.fromString = PixelArt.prototype.fromString = function(string) {
+  var rows = [];
+  var palette = {};
+  var matches = null;
+
+  string = string.split('[]');
+  rows = string[0].split('{}');
+  palette = string[1];
+
+  rows = rows.map(function (row) {
+    matches = row.match(/[\s\S](\d+)/g);
+    if (matches) {
+      matches.forEach(function (match) {
+        match = match.match(/([\s\S])(\d+)/);
+        row = row.replace(match[0], match[1].repeat(match[2]));
+      })
+    }
+    return row;
+  });
+
+  palette = (palette.match(/.\(([^\)]+)\)/g) || []).reduce(function (palette, keyValue) {
+    keyValue = keyValue.split('(');
+    if (keyValue.length > 1) {
+      palette[keyValue[0]] = keyValue[1].substr(0, keyValue[1].length - 1);
+    }
+    return palette;
+  }, {});
+
+  this._rows = rows;
+  this._palette = palette;
+  return this;
+}
+
+PixelArt.toCanvas = PixelArt.prototype.toCanvas = function(filetype, ratio) {
+  var canvas = document.createElement('canvas');
+  var ctx = canvas.getContext('2d');
+  this.draw(ctx);
+  return canvas;
+}
+
+PixelArt.export = PixelArt.prototype.export = function(filetype, ratio) {
+  if (!filetype) filetype = 'image/webp';
+  if (!ratio) ratio = 1;
+  return this.toCanvas().toDataURL(filetype, ratio);
+}
